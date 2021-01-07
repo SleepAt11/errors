@@ -93,7 +93,7 @@ func New(err error) *stackError {
 	e := stackError{s: err.Error()}
 	e.params = map[stackID][]*stackErrorParam{}
 	var stacks []*stack
-	// i range from 1，omit function stack-info-errors.New itself.
+	// i range from 1，omit function errors.New itself.
 	for i := 1; ; i++ {
 		pc, file, line, ok := runtime.Caller(i)
 		if !ok {
@@ -103,8 +103,9 @@ func New(err error) *stackError {
 		s := stack{}
 		notSysCall := f.Name() != "runtime.main" && f.Name() != "runtime.goexit"
 		// New function may be called by With function, when err param's type is not a *stackError.
-		notWithCall := f.Name() != "stack-info-errors/errors.With"
-		if notSysCall && notWithCall {
+		notWithCall := f.Name() != "errors/errors.With"
+		notTestCall := f.Name() != "testing.tRunner"
+		if notSysCall && notWithCall && notTestCall {
 			s.file = file
 			s.line = line
 			s.funcName = f.Name()
